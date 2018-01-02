@@ -40,6 +40,7 @@ int main()
 	cv::Mat elf = cv::imread("..\\x64\\Debug\\Elf.jpg");
 	//OpenCv::DisplayImage(image);
 	cv::Mat landscape = cv::imread("..\\x64\\Debug\\Landscape.jpg");
+	OpenCv::WhiteNoiseImage(landscape,1000);
 	OpenCv::DisplayImage(landscape);
 	return 0;
 }
