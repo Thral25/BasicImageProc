@@ -4,7 +4,7 @@ void OpenCv::DisplayImage(cv::Mat & image)
 {
 	if (!image.empty())
 	{
-		cv::namedWindow("Display");
+		cv::namedWindow("Display", cv::WINDOW_KEEPRATIO);
 		cv::imshow("Display", image);
 		cv::waitKey(0);
 	}
@@ -24,7 +24,7 @@ void OpenCv::WhiteNoiseImage(cv::Mat & image, int noise)
 		{
 			image.at<uchar>(row,col) = 255;
 		}
-		else
+		else if(image.type() == CV_8UC3)
 		{
 			image.at<cv::Vec3b>(row, col)[0] = 255;
 			image.at<cv::Vec3b>(row, col)[1] = 255;
