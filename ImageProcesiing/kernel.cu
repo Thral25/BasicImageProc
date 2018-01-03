@@ -15,7 +15,7 @@ __global__ void addKernel(int *c, const int *a, const int *b)
 __device__ void deviceBlur(const uchar *img_in, uchar *img_out, int img_w, int img_h, int kernel_size, int x, int y)
 {
 	int k_size_2 = int(kernel_size / 2);
-
+	
 	if (x < k_size_2 || x >= img_w - k_size_2)
 		return;
 	if (y < k_size_2 || y >= img_h - k_size_2)
@@ -84,6 +84,7 @@ int main()
 	cv::Mat out(shaft.rows, shaft.cols, CV_8UC1);
 	//OpenCv::WhiteNoiseImage(shaft,1000);
 	cv::Mat tmp(shaft.rows, shaft.cols, CV_8UC1);
+	
 	cv::cvtColor(shaft, tmp, cv::COLOR_BGR2GRAY);
 	if (tmp.type() == CV_8UC1)
 	{
@@ -95,19 +96,31 @@ int main()
 		{
 			cudaMalloc((void**)&devImg_tmp, size);
 			cudaMalloc((void**)&devImg_tmp_out, size);
-
 			cudaMemcpy((void*)devImg_tmp, (void*)tmp.data, size, cudaMemcpyHostToDevice);
+			//cudaDeviceSynchronize();
+			size_t kernelSize = 15;
+			size_t numParts = 100;
+			size_t partsHight = tmp.rows / numParts + kernelSize;
+			int offset = 0;// partsHight *parts*tmp.step;
+			for (size_t parts=0;parts<numParts;parts++)
+			{
+				cudaBlur(devImg_tmp+ offset, devImg_tmp_out + offset, tmp.cols, partsHight, kernelSize);
+				offset += (partsHight - kernelSize-1) * tmp.step;//-1 because of the midle pixel
+				//offset -= (parts * kernelSize)*tmp.cols;
 
-			cudaBlur(devImg_tmp, devImg_tmp_out, tmp.cols, tmp.rows, 32);
+			}
 			cudaError_t cudaStatus= cudaGetLastError();
 			if (cudaStatus == cudaSuccess)
 			{
+				cudaStatus = cudaGetLastError();
 				cudaMemcpy((void*)out.data, (void*)devImg_tmp_out, size, cudaMemcpyDeviceToHost);
+				cudaDeviceSynchronize();
+				cudaStatus = cudaGetLastError();
+				cudaStatus = cudaDeviceReset();
 			}
-
 			OpenCv::DisplayImage(out);
+			cv::imwrite("..\\SHAFT_RES.bmp", out);
 		}
-
 	}
 	return 0;
 }
