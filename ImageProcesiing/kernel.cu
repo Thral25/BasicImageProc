@@ -55,73 +55,55 @@ void cudaBlur(const uchar * img_in, uchar * img_out, int img_w, int img_h, int k
 
 int main()
 {
-    //const int arraySize = 5;
-    //const int a[arraySize] = { 1, 2, 3, 4, 5 };
-    //const int b[arraySize] = { 10, 20, 30, 40, 50 };
-    //int c[arraySize] = { 0 };
-
-    //// Add vectors in parallel.
-    //cudaError_t cudaStatus = addWithCuda(c, a, b, arraySize);
-    //if (cudaStatus != cudaSuccess) {
-    //    fprintf(stderr, "addWithCuda failed!");
-    //    return 1;
-    //}
-
-    //printf("{1,2,3,4,5} + {10,20,30,40,50} = {%d,%d,%d,%d,%d}\n",
-    //    c[0], c[1], c[2], c[3], c[4]);
-
-    //// cudaDeviceReset must be called before exiting in order for profiling and
-    //// tracing tools such as Nsight and Visual Profiler to show complete traces.
-    //cudaStatus = cudaDeviceReset();
-    //if (cudaStatus != cudaSuccess) {
-    //    fprintf(stderr, "cudaDeviceReset failed!");
-    //    return 1;
-    //}
 	cv::Mat elf = cv::imread("..\\Elf.jpg");
-	//OpenCv::DisplayImage(image);
+	cv::Mat res;
+	//OpenCv::ColorReduceMask(elf,8);
+	OpenCv::DisplayImage(elf);
+	OpenCv::SharpenImageWithKernel(elf, res);
+	OpenCv::DisplayImage(res);
 	//cv::Mat landscape = cv::imread("..\\Landscape.jpg");
-	cv::Mat shaft = cv::imread("..\\SHAFT.bmp");
-	cv::Mat out(shaft.rows, shaft.cols, CV_8UC1);
-	//OpenCv::WhiteNoiseImage(shaft,1000);
-	cv::Mat tmp(shaft.rows, shaft.cols, CV_8UC1);
-	
-	cv::cvtColor(shaft, tmp, cv::COLOR_BGR2GRAY);
-	if (tmp.type() == CV_8UC1)
-	{
-		OpenCv::DisplayImage(shaft);
-		uchar* devImg_tmp = 0;
-		uchar* devImg_tmp_out = 0;
-		int size = tmp.rows*tmp.cols;
-		if (tmp.size().area() == size)
-		{
-			cudaMalloc((void**)&devImg_tmp, size);
-			cudaMalloc((void**)&devImg_tmp_out, size);
-			cudaMemcpy((void*)devImg_tmp, (void*)tmp.data, size, cudaMemcpyHostToDevice);
-			//cudaDeviceSynchronize();
-			size_t kernelSize = 15;
-			size_t numParts = 100;
-			size_t partsHight = tmp.rows / numParts + kernelSize;
-			int offset = 0;// partsHight *parts*tmp.step;
-			for (size_t parts=0;parts<numParts;parts++)
-			{
-				cudaBlur(devImg_tmp+ offset, devImg_tmp_out + offset, tmp.cols, partsHight, kernelSize);
-				offset += (partsHight - kernelSize-1) * tmp.step;//-1 because of the midle pixel
-				//offset -= (parts * kernelSize)*tmp.cols;
+	//cv::Mat shaft = cv::imread("..\\SHAFT.bmp");
+	//cv::Mat out(shaft.rows, shaft.cols, CV_8UC1);
+	////OpenCv::WhiteNoiseImage(shaft,1000);
+	//cv::Mat tmp(shaft.rows, shaft.cols, CV_8UC1);
+	//
+	//cv::cvtColor(shaft, tmp, cv::COLOR_BGR2GRAY);
+	//if (tmp.type() == CV_8UC1)
+	//{
+	//	OpenCv::DisplayImage(shaft);
+	//	uchar* devImg_tmp = 0;
+	//	uchar* devImg_tmp_out = 0;
+	//	int size = tmp.rows*tmp.cols;
+	//	if (tmp.size().area() == size)
+	//	{
+	//		cudaMalloc((void**)&devImg_tmp, size);
+	//		cudaMalloc((void**)&devImg_tmp_out, size);
+	//		cudaMemcpy((void*)devImg_tmp, (void*)tmp.data, size, cudaMemcpyHostToDevice);
+	//		//cudaDeviceSynchronize();
+	//		size_t kernelSize = 15;
+	//		size_t numParts = 100;
+	//		size_t partsHight = tmp.rows / numParts + kernelSize;
+	//		int offset = 0;// partsHight *parts*tmp.step;
+	//		for (size_t parts=0;parts<numParts;parts++)
+	//		{
+	//			cudaBlur(devImg_tmp+ offset, devImg_tmp_out + offset, tmp.cols, partsHight, kernelSize);
+	//			offset += (partsHight - kernelSize-1) * tmp.step;//-1 because of the midle pixel
+	//			//offset -= (parts * kernelSize)*tmp.cols;
 
-			}
-			cudaError_t cudaStatus= cudaGetLastError();
-			if (cudaStatus == cudaSuccess)
-			{
-				cudaStatus = cudaGetLastError();
-				cudaMemcpy((void*)out.data, (void*)devImg_tmp_out, size, cudaMemcpyDeviceToHost);
-				cudaDeviceSynchronize();
-				cudaStatus = cudaGetLastError();
-				cudaStatus = cudaDeviceReset();
-			}
-			OpenCv::DisplayImage(out);
-			cv::imwrite("..\\SHAFT_RES.bmp", out);
-		}
-	}
+	//		}
+	//		cudaError_t cudaStatus= cudaGetLastError();
+	//		if (cudaStatus == cudaSuccess)
+	//		{
+	//			cudaStatus = cudaGetLastError();
+	//			cudaMemcpy((void*)out.data, (void*)devImg_tmp_out, size, cudaMemcpyDeviceToHost);
+	//			cudaDeviceSynchronize();
+	//			cudaStatus = cudaGetLastError();
+	//			cudaStatus = cudaDeviceReset();
+	//		}
+	//		OpenCv::DisplayImage(out);
+	//		cv::imwrite("..\\SHAFT_RES.bmp", out);
+	//	}
+	//}
 	return 0;
 }
 
